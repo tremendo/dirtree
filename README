@@ -1,0 +1,14 @@
+Dir Tree
+
+A little Ruby utility to print out an ASCII tree representation of the current and child directories along with its contents.
+
+Example:
+
+
+A few switches are for filtering results or affecting the display.
+only - display only directories, not individual files
+full - flat, full (relative) path of files instead of default tree-structure presentation
+-img omit image files (graphics, docs, movies, audio) from results
+-bin omit executables
+date YYYY-MM-DD[..[YYYY-MM-DD]] show only files modified within date range
+
