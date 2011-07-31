@@ -17,10 +17,12 @@ if ARGV.any? { |a| a.match /-h|--help|help/i }
 	-img  Ignore image files:
 	      graphics, docs, movies, audio
 	-bin  Ignore executables
+	ignore a Regexp to exclude matching files from result-set
 	date  Filter by (modified) date, requires param date or range
 	      shows only files that match date (or range)
 		  ignores timestamp (hours, minutes, seconds)
 		  eg. dirtree.rb date 2010-06-01..2010-06-30
+	-g    Display depth/level guides (vertical lines). Default off
 	}
 	exit
 end
@@ -30,11 +32,18 @@ $explicit = ARGV.any? { |a| a.match /explicit|full/i }
 $ignore = [
 	/\.(svn|hg|git|log|zip|\w+-bk\d+)$/
 ]
+$guide = ' '
 if ARGV.include?('-img') || ARGV.include?('-images')
 	$ignore << /\.(gif|png|jpg|bmp|tif|doc|xls|ppt|pdf|swf|flv|fla|mpg|mp3|mp4|wmv|mov|rm)$/i
 end
 if ARGV.include?('-exe') || ARGV.include?('-bin') || ARGV.include?('-binary')
 	$ignore << /\.(exe|com|bin|app|run|bat|jar|cab|so)$/i
+end
+if ARGV.include?('ignore')
+	$ignore << Regexp.new( ARGV[ ARGV.index('ignore') + 1 ] )
+end
+if ARGV.include?('-g')
+	$guide = ':'
 end
 if ARGV.include?('date')
 	date_filter = ARGV[ ARGV.index('date') + 1 ]
@@ -54,19 +63,21 @@ end
 def displaydir(path,depth)
 	Dir["#{path}/*"].each do |file|
 		if File.directory?(file)
-			if !$explicit
-				print ':  '*depth
-				myputs file, "+->[/#{File.basename(file)}/]"
-			elsif $onlytree
-				myputs file, file.to_s.sub('.//', './')
+			if $ignore.all? { |rx| !file.match(rx) }
+				if !$explicit
+					print "#{$guide}  "*depth
+					myputs file, "/#{File.basename(file)}/"
+				elsif $onlytree
+					myputs file, file.to_s.sub('.//', './')
+				end
+				displaydir("#{path}/#{File.basename(file)}",depth+1)
 			end
-			displaydir("#{path}/#{File.basename(file)}",depth+1)
 		elsif !$onlytree && $ignore.all? { |rx| !file.match(rx) }
 			if $explicit
 				myputs file, file.to_s.sub('.//', './')
 			else
-				print ':  '*depth
-				myputs file, "|#{File.basename(file)}"
+				print "#{$guide}  "*depth
+				myputs file, "./#{File.basename(file)}"
 			end
 		end
 	end
