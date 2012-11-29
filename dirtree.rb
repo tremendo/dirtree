@@ -111,9 +111,11 @@ class Dirtree
 	def puts( f, out )
 		if @options[:date_start].nil? || @options[:date_end].nil?
 			print out + "\n"
-		elsif @options[:date_start].to_s <= File.mtime(f).strftime('%Y-%m-%d') &&
-			@options[:date_end].to_s >= File.mtime(f).strftime('%Y-%m-%d')
-			print "[#{File.mtime(f).strftime('%Y-%m-%d %H:%M')}]\t" + out  + "\n"
+		else
+			mdate, mtime = File.mtime(f).strftime('%Y-%m-%d %H:%M').split(/\s/)
+			if @options[:date_start].to_s <= mdate && @options[:date_end].to_s >= mdate
+				print "[#{mdate} #{mtime}]\t" + out  + "\n"
+			end
 		end
 	end
 end
